@@ -105,3 +105,14 @@ a {
     color-scheme: dark;
   }
 }
+
+.box{
+  max-width: 50%;
+  display: inline-flex
+}
+.title{
+  font-size: 18px;
+  margin-top: 20px;
+  margin-bottom: -20px;
+  text-align: center;
+}

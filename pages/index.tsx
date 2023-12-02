@@ -1,11 +1,44 @@
 import Head from 'next/head'
-import Image from 'next/image'
 import { Inter } from 'next/font/google'
 import styles from '@/styles/Home.module.css'
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { IOrder } from '@/interfaces';
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
+  const [ordenes, setOrdenes] = useState<IOrder[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const yesterday = new Date(Date.now() - 86400000)//that is: 24 * 60 * 60 * 1000
+  const [orderShowed, setOrderShowed] = useState<IOrder>()
+  useEffect(() => {
+    console.log(yesterday.getDate() - 1)
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+
+        const response = await axios.get('https://statistics-api.wildberries.ru/api/v1/supplier/orders', {
+          headers: {
+            'Authorization': process.env.NEXT_PUBLIC_API_KEY,
+          },
+          params: {
+            dateFrom: yesterday, // Puedes ajustar esto según tus necesidades
+          },
+        });
+        setIsLoading(false);
+        setOrdenes(response.data);
+      } catch (error) {
+        setIsLoading(false);
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    // Realizar la solicitud al montar la página
+    fetchData();
+
+  }, []);
+
   return (
     <>
       <Head>
@@ -14,99 +47,70 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      <div className='title'>Cargando pedidos desde ayer en el end point: /api/v1/supplier/orders</div>
       <main className={`${styles.main} ${inter.className}`}>
         <div className={styles.description}>
           <p>
-            Get started by editing&nbsp;
-            <code className={styles.code}>pages/index.tsx</code>
-          </p>
-          <div>
-            <a
-              href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              By{' '}
-              <Image
-                src="/vercel.svg"
-                alt="Vercel Logo"
-                className={styles.vercelLogo}
-                width={100}
-                height={24}
-                priority
-              />
-            </a>
-          </div>
-        </div>
+            
+            {'{'}<br/>
+              <strong>date:</strong>{orderShowed?.date}<br/>
+              <strong>lastChangeDate:</strong>{orderShowed?.lastChangeDate}<br/>
+              <strong>warehouseName:</strong>{orderShowed?.warehouseName}<br/>
+              <strong>countryName:</strong>{orderShowed?.countryName}<br/>
+              <strong>oblastOkrugName:</strong>{orderShowed?.oblastOkrugName}<br/>
+              <strong>regionName:</strong>{orderShowed?.regionName}<br/>
+              <strong>supplierArticle:</strong>{orderShowed?.supplierArticle}<br/>
+              <strong>nmId:</strong>{orderShowed?.nmId}<br/>
+              <strong>barcode:</strong>{orderShowed?.barcode}<br/>
+              <strong>category:</strong>{orderShowed?.category}<br/>
+              <strong>subject:</strong>{orderShowed?.subject}<br/>
+              <strong>brand:</strong>{orderShowed?.brand}<br/>
+              <strong>techSize:</strong>{orderShowed?.techSize}<br/>
+              <strong>incomeID:</strong>{orderShowed?.incomeID}<br/>
+              <strong>isSupply:</strong>{orderShowed?.isSupply}<br/>
+              <strong>isRealization:</strong>{orderShowed?.isRealization}<br/>
+              <strong>totalPrice:</strong>{orderShowed?.totalPrice}<br/>
+              <strong>discountPercent:</strong>{orderShowed?.discountPercent}<br/>
+              <strong>spp:</strong>{orderShowed?.spp}<br/>
+              <strong>finishedPrice:</strong>{orderShowed?.finishedPrice}<br/>
+              <strong>priceWithDisc:</strong>{orderShowed?.priceWithDisc}<br/>
+              <strong>isCancel:</strong>{orderShowed?.isCancel}<br/>
+              <strong>cancelDate:</strong>{orderShowed?.cancelDate}<br/>
+              <strong>orderType:</strong>{orderShowed?.orderType}<br/>
+              <strong>sticker:</strong>{orderShowed?.sticker}<br/>
+              <strong>gNumber:</strong>{orderShowed?.gNumber}<br/>
+              <strong>srid:</strong>{orderShowed?.srid}<br/>
+            {'}'}
 
-        <div className={styles.center}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
-          />
+          </p>
         </div>
 
         <div className={styles.grid}>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Docs <span>-&gt;</span>
-            </h2>
-            <p>
-              Find in-depth information about Next.js features and&nbsp;API.
-            </p>
-          </a>
+          {
+            isLoading ? <h2>Loanding...</h2>
+              :
+              ordenes.map((orden, index) => (
+                <a
+                  key={index}
+                  // href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+                  className={styles.card}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setOrderShowed(orden)}
+                >
+                  <h2>
+                    {index + 1}. {orden.subject}<span>-&gt;</span>
+                  </h2>
+                  <p>
+                    {orden.date}{' '}
+                    Price: {orden.finishedPrice}
+                  </p>
+                </a>
 
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Learn <span>-&gt;</span>
-            </h2>
-            <p>
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
+              ))
+          }
 
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Templates <span>-&gt;</span>
-            </h2>
-            <p>
-              Discover and deploy boilerplate example Next.js&nbsp;projects.
-            </p>
-          </a>
 
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Deploy <span>-&gt;</span>
-            </h2>
-            <p>
-              Instantly deploy your Next.js site to a shareable URL
-              with&nbsp;Vercel.
-            </p>
-          </a>
         </div>
       </main>
     </>
